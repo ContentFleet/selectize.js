@@ -3224,13 +3224,14 @@
 	  this.render = (function() {
 	    var original = self.render;
 	    return function(templateName, data) {
-	      if (templateName === 'item' && data.value && (data.value[0] === '-')) {
-	        data.text = data.value.substr(1);
+	      var label = data[self.settings.labelField];
+	      if (templateName === 'item' && label && (label[0] === '-')) {
+	        data[self.settings.labelField] = label.substr(1);
 	      }
 	      var $element = $(original.apply(this, arguments));
 	      // Append the text as data-text attribute. We will need this when we have
 	      // to change the option on exclude/include click.
-	      $element.attr('data-text', data.text);
+	      $element.attr('data-text', label);
 	      return $element[0].outerHTML;
 	    };
 	  })();
@@ -3242,7 +3243,8 @@
 	      if (options.prepend) {
 	        var render_item = self.settings.render.item;
 	        self.settings.render.item = function(data) {
-	          var exclude = data.value.length && (data.value[0] === '-');
+	          var value = data[self.settings.valueField];
+	          var exclude = value.length && (value[0] === '-');
 	          return prepend(render_item.apply(this, arguments), html, exclude);
 	        };
 	      }
@@ -3251,7 +3253,7 @@
 	
 	      // add event listener
 	      this.$control.on('click', '.' + options.className, function(e) {
-	        //e.preventDefault();
+	        e.preventDefault();
 	        if (self.isLocked) return;
 	
 	        var $target = $(e.currentTarget);
@@ -3268,7 +3270,10 @@
 	        else
 	          newValue = currentValue.substr(1);
 	
-	        self.updateOption(currentValue, { value: newValue, text: text });
+	        var data = {};
+	        data[self.settings.valueField] = newValue;
+	        data[self.settings.labelField] = text;
+	        self.updateOption(currentValue, data);
 	      });
 	
 	    };
