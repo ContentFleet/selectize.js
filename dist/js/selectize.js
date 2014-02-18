@@ -2689,6 +2689,7 @@
 	        self.updateOption(currentValue, data);
 	
 	        self.$input.val(self.getValue());
+	        self.trigger('change', self.getValue());
 	      });
 	
 	    };
