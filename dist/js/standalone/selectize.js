@@ -689,8 +689,10 @@
 	var KEY_ESC       = 27;
 	var KEY_LEFT      = 37;
 	var KEY_UP        = 38;
+	var KEY_P         = 80;
 	var KEY_RIGHT     = 39;
 	var KEY_DOWN      = 40;
+	var KEY_N         = 78;
 	var KEY_BACKSPACE = 8;
 	var KEY_DELETE    = 46;
 	var KEY_SHIFT     = 16;
@@ -700,6 +702,7 @@
 	
 	var TAG_SELECT    = 1;
 	var TAG_INPUT     = 2;
+	
 	
 	var isset = function(object) {
 		return typeof object !== 'undefined';
@@ -947,6 +950,10 @@
 	 * @returns {int}
 	 */
 	var measureString = function(str, $parent) {
+		if (!str) {
+			return 0;
+		}
+		
 		var $test = $('<test>').css({
 			position: 'absolute',
 			top: -99999,
@@ -980,6 +987,8 @@
 	 * @param {object} $input
 	 */
 	var autoGrow = function($input) {
+		var currentWidth = null;
+		
 		var update = function(e) {
 			var value, keyCode, printable, placeholder, width;
 			var shift, character, selection;
@@ -1022,7 +1031,8 @@
 			}
 	
 			width = measureString(value, $input) + 4;
-			if (width !== $input.width()) {
+			if (width !== currentWidth) {
+				currentWidth = width;
 				$input.width(width);
 				$input.triggerHandler('resize');
 			}
@@ -1144,7 +1154,7 @@
 	
 			$wrapper          = $('<div>').addClass(settings.wrapperClass).addClass(classes).addClass(inputMode);
 			$control          = $('<div>').addClass(settings.inputClass).addClass('items').appendTo($wrapper);
-			$control_input    = $('<input type="text" autocomplete="off">').appendTo($control).attr('tabindex', tab_index);
+			$control_input    = $('<input type="text" autocomplete="off" />').appendTo($control).attr('tabindex', tab_index);
 			$dropdown_parent  = $(settings.dropdownParent || $wrapper);
 			$dropdown         = $('<div>').addClass(settings.dropdownClass).addClass(classes).addClass(inputMode).hide().appendTo($dropdown_parent);
 			$dropdown_content = $('<div>').addClass(settings.dropdownContentClass).appendTo($dropdown);
@@ -1264,7 +1274,7 @@
 			self.trigger('initialize');
 	
 			// preload options
-			if (settings.preload) {
+			if (settings.preload === true) {
 				self.onSearchChange('');
 			}
 		},
@@ -1430,6 +1440,8 @@
 				case KEY_ESC:
 					self.close();
 					return;
+				case KEY_N:
+					if (!e.ctrlKey) break;
 				case KEY_DOWN:
 					if (!self.isOpen && self.hasOptions) {
 						self.open();
@@ -1440,6 +1452,8 @@
 					}
 					e.preventDefault();
 					return;
+				case KEY_P:
+					if (!e.ctrlKey) break;
 				case KEY_UP:
 					if (self.$activeOption) {
 						self.ignoreHover = true;
@@ -1461,6 +1475,9 @@
 					self.advanceSelection(1, e);
 					return;
 				case KEY_TAB:
+					if (self.isOpen && self.$activeOption) {
+						self.onOptionSelect({currentTarget: self.$activeOption});
+					}
 					if (self.settings.create && self.createItem()) {
 						e.preventDefault();
 					}
@@ -1554,7 +1571,7 @@
 			if (self.ignoreFocus) return;
 	
 			if (self.settings.create && self.settings.createOnBlur) {
-				self.createItem();
+				self.createItem(false);
 			}
 	
 			self.close();
@@ -2355,12 +2372,16 @@
 		 *
 		 * @return {boolean}
 		 */
-		createItem: function() {
+		createItem: function(triggerDropdown) {
 			var self  = this;
 			var input = $.trim(self.$control_input.val() || '');
 			var caret = self.caretPos;
 			if (!input.length) return false;
 			self.lock();
+	
+			if (typeof triggerDropdown === 'undefined') {
+				triggerDropdown = true;
+			}
 	
 			var setup = (typeof self.settings.create === 'function') ? this.settings.create : function(input) {
 				var data = {};
@@ -2380,7 +2401,7 @@
 				self.addOption(data);
 				self.setCaret(caret);
 				self.addItem(value);
-				self.refreshOptions(self.settings.mode !== 'single');
+				self.refreshOptions(triggerDropdown && self.settings.mode !== 'single');
 			});
 	
 			var output = setup.apply(this, [input, create]);
@@ -3168,6 +3189,93 @@
 	
 	});
 	
+	Selectize.define('include_exclude', function(options) {
+	  if (this.settings.mode === 'single') return;
+	
+	  options = $.extend({
+	    label       : '+',
+	    title       : 'Include/exclude',
+	    className   : 'include-exclude',
+	    prepend     : true,
+	    excludeLabel: '-',
+	    excludeClass: 'excluded'
+	  }, options);
+	
+	  var self = this;
+	  var html = '<a href="javascript:void(0)" class="' + options.className + '" tabindex="-1" title="' + escape_html(options.title) + '">' + options.label + '</a>';
+	
+	  /**
+	   * Appends an element as a child (with raw HTML).
+	   *
+	   * @param {string} html_container
+	   * @param {string} html_element
+	   * @param {bool} exclude
+	   * @return {string}
+	   */
+	  var prepend = function(html_container, html_element, exclude) {
+	    var $container = $(html_container).prepend(html_element);
+	    if (exclude) {
+	      $container.addClass(options.excludeClass);
+	      $container.find('.include-exclude').text(options.excludeLabel);
+	    }
+	    return $container[0].outerHTML;
+	  };
+	
+	  this.render = (function() {
+	    var original = self.render;
+	    return function(templateName, data) {
+	      if (templateName === 'item' && data.value && (data.value[0] === '-')) {
+	        data.text = data.value.substr(1);
+	      }
+	      var $element = $(original.apply(this, arguments));
+	      // Append the text as data-text attribute. We will need this when we have
+	      // to change the option on exclude/include click.
+	      $element.attr('data-text', data.text);
+	      return $element[0].outerHTML;
+	    };
+	  })();
+	
+	  this.setup = (function() {
+	    var original = self.setup;
+	    return function() {
+	      // override the item rendering method to add the button to each
+	      if (options.prepend) {
+	        var render_item = self.settings.render.item;
+	        self.settings.render.item = function(data) {
+	          var exclude = data.value.length && (data.value[0] === '-');
+	          return prepend(render_item.apply(this, arguments), html, exclude);
+	        };
+	      }
+	
+	      original.apply(this, arguments);
+	
+	      // add event listener
+	      this.$control.on('click', '.' + options.className, function(e) {
+	        //e.preventDefault();
+	        if (self.isLocked) return;
+	
+	        var $target = $(e.currentTarget);
+	        var $item = $target.parent();
+	        $item.toggleClass(options.excludeClass);
+	        var excluded = $item.hasClass(options.excludeClass);
+	        $target.text(excluded ? options.excludeLabel : options.label);
+	
+	        var currentValue = $item.attr('data-value');
+	        var text = $item.attr('data-text');
+	        var newValue = currentValue;
+	        if (excluded)
+	          newValue = '-' + currentValue;
+	        else
+	          newValue = currentValue.substr(1);
+	
+	        self.updateOption(currentValue, { value: newValue, text: text });
+	      });
+	
+	    };
+	  })();
+	
+	});
+	
 	Selectize.define('optgroup_columns', function(options) {
 		var self = this;
 	
@@ -3288,7 +3396,7 @@
 					e.preventDefault();
 					if (self.isLocked) return;
 	
-					var $item = $(e.target).parent();
+					var $item = $(e.currentTarget).parent();
 					self.setActiveItem($item);
 					if (self.deleteSelection()) {
 						self.setCaret(self.items.length);

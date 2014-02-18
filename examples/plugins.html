@@ -131,6 +131,27 @@
 				})
 				</script>
 			</div>
+
+            <div class="demo">
+                <h2>Plugin: "include_exclude"</h2>
+                <div class="control-group">
+                    <label for="input-tags">Tags:</label>
+                    <input type="text" id="input-tags_include-exclude" class="input-tags demo-default" value="awesome,-neat">
+                </div>
+                <script>
+                    $('#input-tags_include-exclude').selectize({
+                        plugins: ['include_exclude'],
+                        delimiter: ',',
+                        persist: false,
+                        create: function(input) {
+                            return {
+                                value: input,
+                                text: input
+                            }
+                        }
+                    });
+                </script>
+            </div>
 		</div>
 	</body>
 </html>
