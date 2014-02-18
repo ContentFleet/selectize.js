@@ -81,20 +81,13 @@
   background: rgba(0, 0, 0, 0.05);
 }
 .selectize-control.plugin-include_exclude [data-value].active .include-exclude {
-  border-right-color: #00578d;
+  border-left-color: #00578d;
 }
 .selectize-control.plugin-include_exclude .disabled [data-value] .include-exclude:hover {
   background: none;
 }
 .selectize-control.plugin-include_exclude .disabled [data-value] .include-exclude {
-  border-right-color: #aaaaaa;
-}
-.selectize-control.plugin-include_exclude [data-value].excluded {
-  background: rgba(0, 0, 0, 0.5) !important;
-  border: 1px solid #666 !important;
-}
-.selectize-control.plugin-include_exclude [data-value].excluded .include-exclude {
-  border-right-color: #666 !important;
+  border-left-color: #aaaaaa;
 }
 .selectize-dropdown.plugin-optgroup_columns .optgroup {
   border-right: 1px solid #f2f2f2;

@@ -25,19 +25,12 @@
     background: rgba(0,0,0,0.05);
   }
   [data-value].active .include-exclude {
-    border-right-color: @selectize-color-item-active-border;
+    border-left-color: @selectize-color-item-active-border;
   }
   .disabled [data-value] .include-exclude:hover {
     background: none;
   }
   .disabled [data-value] .include-exclude {
-    border-right-color: lighten(desaturate(@selectize-color-item-border, 100%), @selectize-lighten-disabled-item-border);
-  }
-  [data-value].excluded {
-    background: rgba(0,0,0,0.5) !important;
-    border: 1px solid #666 !important;
-  }
-  [data-value].excluded .include-exclude {
-    border-right-color: #666 !important;
+    border-left-color: lighten(desaturate(@selectize-color-item-border, 100%), @selectize-lighten-disabled-item-border);
   }
 }
