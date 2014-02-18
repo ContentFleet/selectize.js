@@ -2644,11 +2644,7 @@
 	      if (templateName === 'item' && label && (label[0] === '-')) {
 	        data[self.settings.labelField] = label.substr(1);
 	      }
-	      var $element = $(original.apply(this, arguments));
-	      // Append the text as data-text attribute. We will need this when we have
-	      // to change the option on exclude/include click.
-	      $element.attr('data-text', label);
-	      return $element[0].outerHTML;
+	      return original.apply(this, arguments);
 	    };
 	  })();
 	
@@ -2679,17 +2675,19 @@
 	        $target.text(excluded ? options.excludeLabel : options.label);
 	
 	        var currentValue = $item.attr('data-value');
-	        var text = $item.attr('data-text');
 	        var newValue = currentValue;
 	        if (excluded)
 	          newValue = '-' + currentValue;
 	        else
 	          newValue = currentValue.substr(1);
 	
-	        var data = {};
+	        var data = self.options[currentValue];
+	        if (!data) return;
+	
 	        data[self.settings.valueField] = newValue;
-	        data[self.settings.labelField] = text;
+	
 	        self.updateOption(currentValue, data);
+	        self.trigger('change', self.getValue());
 	      });
 	
 	    };
