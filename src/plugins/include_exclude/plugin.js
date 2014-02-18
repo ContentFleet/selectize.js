@@ -96,6 +96,8 @@ Selectize.define('include_exclude', function(options) {
         data[self.settings.valueField] = newValue;
 
         self.updateOption(currentValue, data);
+
+        self.$input.val(self.getValue());
       });
 
     };

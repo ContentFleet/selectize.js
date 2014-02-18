@@ -3271,7 +3271,8 @@
 	        data[self.settings.valueField] = newValue;
 	
 	        self.updateOption(currentValue, data);
-	        self.trigger('change', self.getValue());
+	
+	        self.$input.val(self.getValue());
 	      });
 	
 	    };
