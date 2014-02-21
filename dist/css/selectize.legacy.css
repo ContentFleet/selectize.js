@@ -65,7 +65,7 @@
   font-weight: bold;
   font-size: 12px;
   color: white !important;
-  background-color: #4EE58E;
+  background-color: #96ED89;
   text-decoration: none;
   vertical-align: middle;
   display: inline-block;
@@ -79,7 +79,7 @@
   box-sizing: border-box;
 }
 .selectize-control.plugin-include_exclude [data-value] .include-exclude:hover {
-  background-color: rgba(78, 229, 142, 0.8);
+  background-color: rgba(150, 237, 137, 0.8);
 }
 .selectize-control.plugin-include_exclude [data-value].excluded .include-exclude {
   background-color: #FC6D5E;
