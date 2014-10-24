@@ -14,7 +14,7 @@
 		});
 
 		describe('<input type="text">', function() {
-			it('complete without exceptions', function() {
+			it('should complete without exceptions', function() {
 				var test = setup_test('<input type="text">', {});
 			});
 			describe('getValue()', function() {
@@ -26,9 +26,21 @@
 					var test = setup_test('<input type="text" value="">', {delimiter: ','});
 					expect(test.selectize.getValue()).to.be.equal('');
 				});
-				it('should proper value when not empty', function() {
+				it('should return proper value when not empty', function() {
 					var test = setup_test('<input type="text" value="a,b">', {delimiter: ','});
 					expect(test.selectize.getValue()).to.be.equal('a,b');
+				});
+			});
+			describe('<input type="text" attributes>', function() {
+				it('should propagate original input attributes to the generated input', function() {
+					var test = setup_test('<input type="text" autocorrect="off" autocapitalize="none">', {});
+					expect(test.selectize.$control_input.attr('autocorrect')).to.be.equal('off');
+					expect(test.selectize.$control_input.attr('autocapitalize')).to.be.equal('none');
+				});
+				it('should not add attributes if not present in the original', function() {
+					var test = setup_test('<input type="text">', {});
+					expect(test.selectize.$control_input.attr('autocorrect')).to.be.equal(undefined);
+					expect(test.selectize.$control_input.attr('autocapitalize')).to.be.equal(undefined);
 				});
 			});
 		});
@@ -204,6 +216,30 @@
 					Syn.click($button);
 				});
 			}
+		});
+
+		describe('<select> (not required)', function(){
+			var $form, $button, test;
+
+			beforeEach(function() {
+				test = setup_test('<select>' +
+					'<option value="">Select an option...</option>' +
+					'<option value="a">A</option>' +
+				'</select>', {});
+				$form = test.$select.parents('form');
+				$button = $('<button type="submit">').appendTo($form);
+			});
+			afterEach(function() {
+				$form.off('.test_required');
+				$button.remove();
+			});
+
+			it('should have isRequired property set to false', function() {
+				expect(test.selectize.isRequired).to.be.equal(false);
+			});
+			it('should not have the required class', function() {
+				expect(test.selectize.$control.hasClass('required')).to.be.equal(false);
+			});
 		});
 
 	});
